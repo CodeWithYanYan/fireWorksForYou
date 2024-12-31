@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy New Year</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: black;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        #message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            font-size: 1em;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="message">Happy New Year Jessa! 🎉<br>
+      You are so...
+    </div>
+
+    <audio id="bg-music" loop autoplay>
+      <source src="fireworks.mp3" type="audio/mp3">
+      Your browser does not support the audio element.
+  </audio>
+    <canvas id="fireworks"></canvas>
+
+    <script>
+        const canvas = document.getElementById('fireworks');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const messages = [
+            "Pretty", "Beautiful", "Mesmerizing", "Enchanting", "Sparkling", "Hypnotic!", "Angelic", "Beautiful",
+            "Luminous", "Lovely", "Stunning", "Elegant", "Charming", "Captivating", "Radiant", "Dazzling"
+        ];
+        let messageIndex = 0;
+
+        class Firework {
+            constructor(x, y, color) {
+                this.startX = x;
+                this.startY = canvas.height;
+                this.x = x;
+                this.y = this.startY;
+                this.targetY = y;
+                this.color = color;
+                this.particles = [];
+                this.explosionSize = 50;
+                this.velocityY = -2;
+                this.done = false;
+                this.message = messages[messageIndex % messages.length];
+                messageIndex++;
+            }
+
+            update() {
+                if (!this.done) {
+                    this.y += this.velocityY;
+
+                    if (this.y <= this.targetY) {
+                        this.done = true;
+                        for (let i = 0; i < 100; i++) {
+                            this.particles.push(new Particle(this.x, this.y, this.color));
+                        }
+                    }
+                } else {
+                    this.particles.forEach((particle) => particle.update());
+                    this.particles = this.particles.filter((particle) => !particle.done);
+                }
+            }
+
+            draw() {
+                if (!this.done) {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                } else {
+                    this.particles.forEach((particle) => particle.draw());
+                    ctx.fillStyle = this.color;
+                    ctx.font = "20px Arial";
+                    ctx.textAlign = "center";
+                    ctx.fillText(this.message, this.x, this.y - 50);
+                }
+            }
+        }
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.size = Math.random() * 3 + 1;
+                this.velocityX = Math.random() * 6 - 3;
+                this.velocityY = Math.random() * 6 - 3;
+                this.lifespan = 100;
+                this.done = false;
+            }
+
+            update() {
+                this.x += this.velocityX;
+                this.y += this.velocityY;
+                this.lifespan--;
+                this.size -= 0.03;
+
+                if (this.lifespan <= 0 || this.size <= 0) {
+                    this.done = true;
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+        }
+
+        const fireworks = [];
+        const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan'];
+
+        function createFirework() {
+            const x = Math.random() * canvas.width;
+            const y = Math.random() * canvas.height / 2;
+            const color = colors[Math.floor(Math.random() * colors.length)];
+
+            fireworks.push(new Firework(x, y, color));
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            fireworks.forEach((firework, index) => {
+                firework.update();
+                firework.draw();
+
+                if (firework.done && firework.particles.length === 0) {
+                    fireworks.splice(index, 1);
+                }
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        setInterval(createFirework, 500);
+        animate();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
